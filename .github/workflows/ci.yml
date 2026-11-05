@@ -1,0 +1,54 @@
+# Builds and checks Kiln Code on every pull request and every push to main.
+# The live provider tests (#[ignore]) don't run here: they need a signed-in
+# Claude Code / Codex and spend real usage.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  windows:
+    name: Build and test (Windows x64)
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Format
+        run: cargo fmt --check
+
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Test
+        run: cargo test --workspace
+
+      - name: Release build
+        run: cargo build --release
+
+      - name: Upload kiln-code.exe
+        uses: actions/upload-artifact@v4
+        with:
+          name: kiln-code-windows-x64
+          path: target/release/kiln-code.exe
+          if-no-files-found: error
+          retention-days: 14
