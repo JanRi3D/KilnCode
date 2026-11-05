@@ -2,5 +2,42 @@
 name = "kiln_code"
 version = "0.1.0"
 edition = "2024"
+description = "Kiln Code: a native desktop controller for Claude Code and Codex agents"
+license = "MIT"
+default-run = "kiln-code"
+
+[[bin]]
+name = "kiln-code"
+path = "src/main.rs"
 
 [dependencies]
+eframe = { version = "0.37", default-features = false, features = ["wgpu", "default_fonts", "persistence"] }
+egui = "0.37"
+egui_extras = { version = "0.37", features = ["svg"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rusqlite = { version = "0.41", features = ["bundled"] }
+portable-pty = "0.9"
+vt100 = "0.18"
+pulldown-cmark = { version = "0.13", default-features = false }
+syntect = { version = "5.3", default-features = false, features = ["default-syntaxes", "default-themes", "regex-fancy"] }
+rfd = "0.17"
+directories = "6"
+uuid = { version = "1", features = ["v4"] }
+notify-rust = "4"
+open = "5"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_System_JobObjects", "Win32_System_Threading", "Win32_Security"] }
+
+[dev-dependencies]
+tempfile = "3"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 4
+strip = true
+
+[profile.dev.package."*"]
+opt-level = 2
